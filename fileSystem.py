@@ -12,12 +12,13 @@ class FileSystem:
         if os.path.exists(path):
             os.chdir(path)
 
-    def checkExistsDataSet(self, filename):
+    def checkFileExists(self, filename):
         if os.path.exists(filename):
-            return g_calendar.checkRelevance(self._getDataSetCreateDate(filename))
+            return self._getFileLastModifiedDate(filename)
+        return False
 
-    def _getDataSetCreateDate(self, filename):
-        return os.path.getctime(filename)
+    def _getFileLastModifiedDate(self, filename):
+        return g_calendar.timeToGMT(os.path.getmtime(filename))
 
     def _initRoot(self):
         if not os.path.exists(self.root):

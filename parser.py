@@ -25,27 +25,36 @@ class Parser:
         namesRegions = self._soup.find_all('td')
         return [region.find('b').getText() for region in namesRegions if region.find('b') is not None]
 
-    def _getDataSetsUploadDate(self):
-        return self._soup.find('td', {'class': 'small'}).text.split('- ')[1]
+    def _downloadFile(self, filename, data):
+        with open(filename, 'w', encoding='utf-8') as file:
+            json.dump(data, file, ensure_ascii=False)
+            print(f'Region [{filename.split(".json")[0]}] downloaded!')
 
-    def _downloadDataSets(self, FTP=None):
+    def _downloadDataSets(self):
+
         g_fileSystem.chdir('sets')
+
         for dataSet in zip(self._dataSetLinks, self._dataSetRegions):
 
-            urlToDataSet, region = dataSet
+            url, region = dataSet
             filename = region + '.json'
 
-            responce = requests.get(urlToDataSet)
+            responce = requests.get(url)
 
-            with open(filename, 'w', encoding='utf-8') as file:
-                json.dump(responce.json(), file, ensure_ascii=False)
-                print(f'Region [{region}] downloaded!')
+            if (fileStatus := g_fileSystem.checkFileExists(filename)) is not False:
+                serverDate = g_calendar.timeToGMT(responce.headers['Last-Modified'])
+                localDate = fileStatus
+
+                if g_calendar.checkRelevance(serverDate, localDate):
+                    self._downloadFile(filename, data=responce.json())
+
+            else:
+                self._downloadFile(filename, data=responce.json())
 
         g_fileSystem.chdir(g_fileSystem.root)
 
     def run(self):
         self._generateSoup()
-        g_calendar.uploadDateDataSets = self._getDataSetsUploadDate()
         self._dataSetLinks = self._getDataSetLinks()
         self._dataSetRegions = self._getDataSetRegions()
         self._downloadDataSets()

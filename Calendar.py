@@ -1,6 +1,5 @@
 from datetime import datetime
 import enum
-import time
 
 
 class MONTHS(enum.IntEnum):
@@ -21,30 +20,27 @@ class MONTHS(enum.IntEnum):
 class Calendar:
 
     def __init__(self):
-        self._uploadDateDataSets = None
+        self._serverDate = None
 
-    def generateDate(self, dateString):
-        dateString = dateString.title().split()
-        month, year = dateString[0], int(dateString[1])
-        month = MONTHS[month].value + 1
-        if month > 12:
-            month %= 12
-            year += 1
-        return datetime.strptime(f'{month}/{year}', "%m/%Y").strftime("%m/%Y")
+    def timeToGMT(self, data):
+        if isinstance(data, float):
+            dtUTC = datetime.utcfromtimestamp(data)
+            timeStringFormatFromdDT = datetime.strftime(dtUTC, "%a, %d %b %Y %H:%M:%S GMT")
+            return datetime.strptime(timeStringFormatFromdDT, "%a, %d %b %Y %H:%M:%S GMT")
 
-    def checkRelevance(self, date):
-        # self._uploadDateDataSets, ':::', 
-        # print(datetime.fromtimestamp(date).strftime('%Y-%m-%d %H:%M:%S'))
-        # print(time.ctime(date))
-        pass
+        elif isinstance(data, str):
+            return datetime.strptime(data, "%a, %d %b %Y %H:%M:%S GMT")
+
+    def checkRelevance(self, server, local):
+        return True if server > local else False
 
     @property
-    def uploadDateDataSets(self):
-        return self._uploadDateDataSets
+    def serverDate(self):
+        return self._serverDate
 
-    @uploadDateDataSets.setter
-    def uploadDateDataSets(self, date):
-        self._uploadDateDataSets = date
+    @serverDate.setter
+    def serverDate(self, date):
+        self._serverDate = date
 
 
 g_calendar = Calendar()
