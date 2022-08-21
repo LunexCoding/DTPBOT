@@ -3,6 +3,10 @@ import requests
 from bs4 import BeautifulSoup as bs
 from fileSystem import g_fileSystem
 from Calendar import g_calendar
+from Logger import logger
+
+
+LOGGER = logger.getLogger(__name__)
 
 
 class Parser:
@@ -28,6 +32,7 @@ class Parser:
     def _downloadFile(self, filename, data):
         with open(filename, 'w', encoding='utf-8') as file:
             json.dump(data, file, ensure_ascii=False)
+        LOGGER.info(f"File [{filename}] has been dowloaded!")
 
     def _downloadDataSets(self):
 
@@ -50,6 +55,7 @@ class Parser:
             else:
 
                 if g_calendar.checkRelevance(serverDate, localDate):
+                    LOGGER.warning(f"File [{filename}] outdate!")
                     self._downloadFile(filename, data=responce.json())
 
         g_fileSystem.chdir(g_fileSystem.root)

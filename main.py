@@ -1,5 +1,10 @@
 from parser import g_parser
 from fileSystem import g_fileSystem
+from Logger import logger
+from pathlib import Path
+
+
+LOGGER = logger.getLogger(__name__)
 
 
 def main():
@@ -7,11 +12,12 @@ def main():
 
 
 if __name__ == '__main__':
+    LOGGER.debug('Start log')
     g_fileSystem.initTree([
-        'sets',
-        'data',
-        'data/train',
-        'data/processing'
+        Path('sets'),
+        Path('data'),
+        Path('data', 'train'),
+        Path('data', 'processing')
     ])
 
     main()

@@ -1,5 +1,10 @@
 import os
 from Calendar import g_calendar
+from Logger import logger
+from pathlib import Path, PurePath
+
+
+LOGGER = logger.getLogger(__name__)
 
 
 class FileSystem:
@@ -12,9 +17,10 @@ class FileSystem:
     def chdir(self, path):
         try:
             os.chdir(path)
-            self._lastWorkingDirectory = path
+            self._lastWorkingDirectory = Path(PurePath(Path.cwd()).parents[0].name)
+            LOGGER.debug(f'Chdir [{self._lastWorkingDirectory}] -> [{Path(self.root, path) if path != self.root else self.root}]')
         except (FileNotFoundError, OSError) as e:
-            print(e)
+            LOGGER.error(e)
 
     def checkFileExists(self, filename):
         return os.path.exists(filename)
@@ -25,12 +31,14 @@ class FileSystem:
     def _initRoot(self):
         if not os.path.exists(self.root):
             os.makedirs(self.root)
+            LOGGER.debug(f'Root [{Path(self.root)}] has been created!')
         self.chdir(self.root)
 
     def initTree(self, tree=None):
         for path in tree:
             if not os.path.exists(path):
                 os.makedirs(path)
+                LOGGER.debug(f'Directory [{Path(self.root, path)}] has been created!')
 
     @property
     def root(self):
