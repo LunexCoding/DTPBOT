@@ -6,26 +6,28 @@ class FileSystem:
 
     def __init__(self, root='assets'):
         self._root = root
+        self._lastWorkingDirectory = self.root
         self._initRoot()
 
     def chdir(self, path):
-        if os.path.exists(path):
+        try:
             os.chdir(path)
+            self._lastWorkingDirectory = path
+        except (FileNotFoundError, OSError) as e:
+            print(e)
 
     def checkFileExists(self, filename):
-        if os.path.exists(filename):
-            return self._getFileLastModifiedDate(filename)
-        return False
+        return os.path.exists(filename)
 
-    def _getFileLastModifiedDate(self, filename):
-        return g_calendar.timeToGMT(os.path.getmtime(filename))
+    def getFileLastModifiedGMTDate(self, filename):
+        return g_calendar.getGMTFromFloat(os.path.getmtime(filename))
 
     def _initRoot(self):
         if not os.path.exists(self.root):
             os.makedirs(self.root)
         self.chdir(self.root)
 
-    def _createTree(self, tree=None):
+    def initTree(self, tree=None):
         for path in tree:
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -36,9 +38,3 @@ class FileSystem:
 
 
 g_fileSystem = FileSystem('assets')
-g_fileSystem._createTree([
-    'sets',
-    'data',
-    'data/train',
-    'data/processing'
-])

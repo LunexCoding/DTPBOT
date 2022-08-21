@@ -28,7 +28,6 @@ class Parser:
     def _downloadFile(self, filename, data):
         with open(filename, 'w', encoding='utf-8') as file:
             json.dump(data, file, ensure_ascii=False)
-            print(f'Region [{filename.split(".json")[0]}] downloaded!')
 
     def _downloadDataSets(self):
 
@@ -41,19 +40,21 @@ class Parser:
 
             responce = requests.get(url)
 
-            if (fileStatus := g_fileSystem.checkFileExists(filename)) is not False:
-                serverDate = g_calendar.timeToGMT(responce.headers['Last-Modified'])
-                localDate = fileStatus
+            try:
+                serverDate = g_calendar.getGMTFromStr(responce.headers['Last-Modified'])
+                localDate = g_fileSystem.getFileLastModifiedGMTDate(filename)
+
+            except FileNotFoundError:
+                self._downloadFile(filename, data=responce.json())
+
+            else:
 
                 if g_calendar.checkRelevance(serverDate, localDate):
                     self._downloadFile(filename, data=responce.json())
 
-            else:
-                self._downloadFile(filename, data=responce.json())
-
         g_fileSystem.chdir(g_fileSystem.root)
 
-    def run(self):
+    def start(self):
         self._generateSoup()
         self._dataSetLinks = self._getDataSetLinks()
         self._dataSetRegions = self._getDataSetRegions()
