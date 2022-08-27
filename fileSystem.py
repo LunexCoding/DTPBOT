@@ -12,7 +12,6 @@ class FileSystem:
     def __init__(self, root='assets'):
         self._root = root
         self._lastWorkingDirectory = self.root
-        self._initRoot()
 
     def chdir(self, path):
         try:
@@ -30,7 +29,7 @@ class FileSystem:
 
     def _initRoot(self):
         if not os.path.exists(self.root):
-            os.makedirs(self.root)
+            os.mkdir(self.root)
             LOGGER.debug(f'Root [{Path(self.root)}] has been created!')
         self.chdir(self.root)
 
@@ -38,7 +37,8 @@ class FileSystem:
         for path in tree:
             if not os.path.exists(path):
                 os.makedirs(path)
-                LOGGER.debug(f'Directory [{Path(self.root, path)}] has been created!')
+                LOGGER.debug(f'Directory [{Path(path)}] has been created!')
+        self.chdir(self.root)
 
     @property
     def root(self):

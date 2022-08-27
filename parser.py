@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup as bs
 from fileSystem import g_fileSystem
 from Calendar import g_calendar
 from Logger import logger
+from settings import g_config
 
 
 LOGGER = logger.getLogger(__name__)
@@ -34,29 +35,26 @@ class Parser:
             json.dump(data, file, ensure_ascii=False)
         LOGGER.info(f"File [{filename}] has been dowloaded!")
 
-    def _downloadDataSets(self):
-
+    def _downloadDataSets(self, autoDownload):
         g_fileSystem.chdir('sets')
-
         for dataSet in zip(self._dataSetLinks, self._dataSetRegions):
-
             url, region = dataSet
             filename = region + '.json'
-
             responce = requests.get(url)
 
             try:
                 serverDate = g_calendar.getGMTFromStr(responce.headers['Last-Modified'])
                 localDate = g_fileSystem.getFileLastModifiedGMTDate(filename)
-
             except FileNotFoundError:
-                self._downloadFile(filename, data=responce.json())
-
+                if autoDownload:
+                    self._downloadFile(filename, data=responce.json())
+                else:
+                    LOGGER.info(f"File [{filename}] can be downloaded!")
             else:
-
                 if g_calendar.checkRelevance(serverDate, localDate):
                     LOGGER.warning(f"File [{filename}] outdate!")
-                    self._downloadFile(filename, data=responce.json())
+                    if autoDownload:
+                        self._downloadFile(filename, data=responce.json())
 
         g_fileSystem.chdir(g_fileSystem.root)
 
@@ -64,7 +62,7 @@ class Parser:
         self._generateSoup()
         self._dataSetLinks = self._getDataSetLinks()
         self._dataSetRegions = self._getDataSetRegions()
-        self._downloadDataSets()
+        self._downloadDataSets(g_config.isAutoDownload)
 
 
 g_parser = Parser('https://dtp-stat.ru/opendata/')
