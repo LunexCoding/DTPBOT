@@ -27,12 +27,6 @@ class FileSystem:
     def getFileLastModifiedGMTDate(self, filename):
         return g_calendar.getGMTFromFloat(os.path.getmtime(filename))
 
-    def _initRoot(self):
-        if not os.path.exists(self.root):
-            os.mkdir(self.root)
-            LOGGER.debug(f'Root [{Path(self.root)}] has been created!')
-        self.chdir(self.root)
-
     def initTree(self, tree=None):
         for path in tree:
             if not os.path.exists(path):
